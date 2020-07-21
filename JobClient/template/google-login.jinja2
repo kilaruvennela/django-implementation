@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id"
+          content="732910051082-helr1005cc9ul5q6uqelsguovq58m774.apps.googleusercontent.com">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+{#<a href="#" onclick="signOut();">Sign out</a>#}
+<script>
+/*
+    function check_google_loggged_in() {
+
+        $.ajax(
+            {
+                async: true,
+                crossDomain: true,
+                url: "http://localhost:8000/authentication/goog/",
+                "headers": {
+                    "Authorization": localStorage.getItem("Token")
+                },
+
+            }
+        ).done(function (response) {
+            if (response.error) {
+                console.log(response.error)
+            } else {
+
+                if (response.google_login) {
+                    localStorage.setItem("Token", "Bearer " + response.access_token);
+
+                    location.href = "http://localhost:8080/dashboard"
+                }else {
+                    localStorage.setItem("Token", "");
+                }
+            }
+        })
+    }
+*/
+// https://developers.google.com/identity/sign-in/web/sign-in
+
+    function onSignIn(googleUser) {
+        // Useful data for your client-side scripts:
+        var profile = googleUser.getBasicProfile();
+        console.log(profile.getEmail())
+
+
+        // The ID token you need to pass to your backend:
+        var id_token = googleUser.getAuthResponse().access_token;
+
+
+        var is_google_login = {
+            async: true,
+            crossDomain: true,
+            url: "http://127.0.0.1:8000/authentication/convert-token/",
+            method: "POST",
+            "headers": {
+                "Authorization": localStorage.getItem("Token")
+            },
+            data: {
+                'access_token': id_token,
+                'email': profile.getEmail(),
+                'extra_data': googleUser.getAuthResponse()
+            }
+        }
+
+        // Token conversion requested here
+
+        $.ajax(is_google_login).done(function (response) {
+            if (response.error) {
+
+                console.log('here', response);
+            }
+            else {
+
+                localStorage.setItem("Token", "Bearer " + response.access_token);
+
+                location.href = "http://localhost:8080/dashboard"
+            }
+        });
+    }
+
+
+    function signOut() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+            console.log('User signed out.');
+        });
+    }
+
+    /* function sign() {
+        var sign = gapi.auth2.getAuthInstance().isSignedIn.get();
+        console.log(sign)
+
+    } */
+
+</script>
+</body>
+</html>
